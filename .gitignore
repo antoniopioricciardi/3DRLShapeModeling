@@ -1,0 +1,11 @@
+.DS_Store
+venv/
+.idea/
+models/
+videos/
+logs/
+wandb/
+outputs/
+idea/
+multirun/
+./shapes/
