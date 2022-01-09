@@ -3,7 +3,7 @@ import open3d as o3d
 import numpy as np
 import scipy as spshape_name
 import os
-from misc_utils.shapes.operations import compute_adjacency_matrix, compute_distance_matrix# , mean_curvature_flow, normalize_mesh
+from misc_utils.shapes.operations import compute_adjacency_matrix, compute_distance_matrix, mean_curvature_flow, normalize_mesh
 
 def simplify_mesh(mesh_in):
     # mesh_in = o3dtut.get_bunny_mesh()

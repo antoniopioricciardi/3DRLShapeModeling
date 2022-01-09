@@ -1,4 +1,4 @@
-# import igl
+import igl
 import numpy as np
 import open3d as o3d
 from scipy.spatial.distance import cdist
@@ -36,35 +36,35 @@ def compute_adjacency_matrix(adj_list):
     return adj_matrix
 
 
-# def compute_adjacency_matrix_igl(f):
-#     a = igl.adjacency_matrix(f)
-#     return a
-#
-#
-# def mean_curvature_flow(v, f, num_iterations=10):
-#     """
-#     v: vertices
-#     f: triangles
-#     """
-#     l = igl.cotmatrix(v, f)
-#
-#     n = igl.per_vertex_normals(v, f) * 0.5 + 0.5
-#     c = np.linalg.norm(n, axis=1)
-#
-#     vs = [v]
-#     cs = [c]
-#     for i in range(num_iterations):
-#         print(f'{i}/{num_iterations}')
-#         m = igl.massmatrix(v, f, igl.MASSMATRIX_TYPE_BARYCENTRIC)
-#
-#         s = (m - 0.001 * l)
-#         b = m.dot(v)
-#         v = spsolve(s, m.dot(v))
-#         n = igl.per_vertex_normals(v, f) * 0.5 + 0.5
-#         c = np.linalg.norm(n, axis=1)
-#         vs.append(v)
-#         cs.append(c)
-#     return v
+def compute_adjacency_matrix_igl(f):
+    a = igl.adjacency_matrix(f)
+    return a
+
+
+def mean_curvature_flow(v, f, num_iterations=10):
+    """
+    v: vertices
+    f: triangles
+    """
+    l = igl.cotmatrix(v, f)
+
+    n = igl.per_vertex_normals(v, f) * 0.5 + 0.5
+    c = np.linalg.norm(n, axis=1)
+
+    vs = [v]
+    cs = [c]
+    for i in range(num_iterations):
+        print(f'{i}/{num_iterations}')
+        m = igl.massmatrix(v, f, igl.MASSMATRIX_TYPE_BARYCENTRIC)
+
+        s = (m - 0.001 * l)
+        b = m.dot(v)
+        v = spsolve(s, m.dot(v))
+        n = igl.per_vertex_normals(v, f) * 0.5 + 0.5
+        c = np.linalg.norm(n, axis=1)
+        vs.append(v)
+        cs.append(c)
+    return v
 
 
 def normalize_mesh(mesh, spread=1):
