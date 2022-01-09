@@ -1,0 +1,2 @@
+dummy2d:
+  _target_: rewards.dummy2d

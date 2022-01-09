@@ -1,0 +1,5 @@
+gaussian3d:
+  _target_: acts.gaussian3d
+  spread: 5
+  neighbors_movement_scale: 1
+  sigma: 0.1

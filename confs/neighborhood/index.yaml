@@ -1,0 +1,3 @@
+neigh:
+  _target_: neighborhood.neighborhood_from_index
+  num_neighbors_per_side: 1

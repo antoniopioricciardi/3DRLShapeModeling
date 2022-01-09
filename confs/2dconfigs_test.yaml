@@ -1,0 +1,39 @@
+defaults:
+  - inits_c:
+    - circle
+  - inits_s:
+    - from_img
+  - neighborhood:
+    - index
+  - actions:
+    - neighborhood_linear # gaussian2d #
+  - rewards:
+    - dummy2d
+  - policies:
+    - mlp
+
+save_animation_gif: False
+model_name: 2dgaussian_model_3pt  # filename of the model to be loaded
+seed: 42
+num_points : 200  # use this to decide the total number of source and canvas points
+neighborhood_size : 5 # use this to decide the number of point states the agent sees and moves (if using indices, n means n//2 neighbors per side + the central point)
+
+#THOSE TWO ROWS BELOW CAN BE DELETED#
+num_moving_points : 5  # use this to decide the number of point states the agent sees
+num_neighbors_per_side : 2  # number of neighbors to move
+#THOSE TWO ROWS ABOVE CAN BE DELETED#
+
+neighbors_movement_scale: 0.5
+sigma: 0.5
+spread : 5
+steps_per_round: 15
+total_timesteps : 18000  # total testing steps
+max_steps : 18000  # n steps before resetting the env  # In training use only this instead of total_timesteps
+learning_rate : 0.0001
+update_step: 2048
+log_video_steps : 1000
+envs : 1
+correspondence: 'sequential'
+inits_s:
+  from_img:
+    img_path: ./images/seal.png

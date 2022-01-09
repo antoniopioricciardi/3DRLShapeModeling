@@ -1,0 +1,3 @@
+linear:
+  _target_: acts.neighborhood_linear3d_anylength
+  spread: 5

@@ -1,0 +1,44 @@
+defaults:
+  - inits_c:
+    - load_shape_new
+  - inits_s:
+    - load_shape_new
+  - neighborhood:
+    - index
+  - actions:
+    - gaussian3d # neighborhood_linear3d
+  - rewards:
+    - dummy
+  - policies:
+    - mlp
+
+is_testing: True
+save_animation_gif: False
+
+model_name: gaussian_model  # filename of the model to be saved.
+seed: 42
+num_triangles: 1
+steps_per_vertex: 15
+neighbors_movement_scale: 0.5
+sigma: 0.1
+spread : 5
+
+total_timesteps : 160000  # total training steps
+max_steps : 160000  # n steps before resetting the env
+learning_rate : 0.0001
+update_step: 1000
+log_video_steps : 5000
+envs : 1
+
+correspondence: 'sequential'
+save_transitions: True  # This is a bool, not str
+
+# source_shapes: single  # single or folder
+
+
+inits_s:
+  from_shape:
+    shape_path: ./shapes/tr_reg_000_rem.ply  # 25.ply
+inits_c:
+  from_shape:
+    shape_path: ./shapes/smpl_base_neutro_rem.ply  # sphere_curvature_flow.ply

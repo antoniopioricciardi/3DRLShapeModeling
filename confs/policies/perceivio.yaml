@@ -1,0 +1,4 @@
+model:
+  _target_: poly.get_perc
+params:
+  features_dim: 128

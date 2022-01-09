@@ -1,0 +1,2 @@
+neigh:
+  _target_: neighborhood.sorted_distance_neighborhood

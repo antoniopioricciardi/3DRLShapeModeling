@@ -1,0 +1,3 @@
+from_shape:
+  _target_: inits.sphere_from_mesh
+  spread: 5

@@ -1,0 +1,5 @@
+model:
+  _target_: poly.get_mlp
+params:
+  pi: [256, 256, 256]
+  vf: [256, 256, 256]

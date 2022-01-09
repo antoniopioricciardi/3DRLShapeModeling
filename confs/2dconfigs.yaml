@@ -1,0 +1,39 @@
+defaults:
+  - inits_c:
+    - rand2d
+  - inits_t:
+    - rand2d
+  - neighborhood:
+    - index
+  - actions:
+    - linear # gaussian2d # neighborhood_linear #
+  - rewards:
+    - dummy2d
+  - policies:
+    - mlp
+
+model_name: model_3pt  # filename of the model to be saved.
+seed: 42
+num_points : 3  # use this to decide the total number of source and canvas points
+neighborhood_size : 3 # use this to decide the number of point states the agent sees and moves (if using indices, n means n//2 neighbors per side + the central point)
+
+#THOSE TWO ROWS BELOW CAN BE DELETED#
+num_moving_points : 3  # use this to decide the number of point states the agent sees
+num_neighbors_per_side : 3  # number of neighbors to move
+#THOSE TWO ROWS ABOVE CAN BE DELETED#
+#|    ep_rew_mean     | -13.5    |
+neighbors_movement_scale: 1
+sigma: 1
+spread : 5
+steps_per_round: 15
+total_timesteps : 15000  # total training steps
+max_steps : 30  # n steps before resetting the env
+learning_rate : 0.001
+update_step: 2048
+log_video_steps : 300
+envs : 1
+correspondence: 'sequential'
+
+# UNNORMALIZED REWARDS and LR 0.0001 seemed to work best (to try lr 0.001).
+# However, try training longer with normalized rewards.
+# Maybe the issue is given by the squared value, that takes away linearity from the reward hence correlation with actions

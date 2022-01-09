@@ -1,0 +1,6 @@
+from_shape:
+  _target_: inits.from_shape
+  spread: 5
+  simplify: False
+  normalize: True
+  shape_path: ./shapes/25.ply

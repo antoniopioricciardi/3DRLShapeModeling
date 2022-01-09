@@ -1,0 +1,4 @@
+from_img:
+  _target_: inits.from_img
+  spread: 5
+  img_path: ./images/twitter.png

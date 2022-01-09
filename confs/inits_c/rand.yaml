@@ -1,0 +1,6 @@
+init:
+  _target_: inits.rand_init3d
+  center_x: 0
+  center_y: 0
+  span_x : 1
+  span_y : 1

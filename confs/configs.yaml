@@ -1,0 +1,31 @@
+defaults:
+  - inits_c:
+    - rand
+  - inits_s:
+    - rand
+  - neighborhood:
+    - index
+  - actions:
+    - gaussian3d # neighborhood_linear3d # _anylength
+  - rewards:
+    - dummy
+  - policies:
+    - mlp
+
+model_name: gaussian_model  # filename of the model to be saved.
+seed: 42
+num_triangles: 1
+steps_per_vertex: 15
+neighbors_movement_scale: 0.5
+sigma: 0.1
+spread : 5
+
+is_testing: False
+total_timesteps : 150000  # total training steps
+max_steps : 450  # n steps before resetting the env
+learning_rate : 0.0001
+update_step: 2048
+log_video_steps : 5000
+envs : 1
+correspondence: 'sequential'
+save_transitions: False  # This is a bool, not str

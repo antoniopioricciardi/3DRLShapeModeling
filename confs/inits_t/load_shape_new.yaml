@@ -1,0 +1,4 @@
+load_shape_new:
+  _target_: inits.load_shape_new
+  spread: 5
+  shape_path: ./shapes/25.ply
