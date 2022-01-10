@@ -6,11 +6,11 @@ def normalize_reward(x, normaliztion_value):
     return x / normaliztion_value
 
 
-def dummy(s_x, s_y, s_z, c_x, c_y, c_z):
+def dummy(t_x, t_y, t_z, c_x, c_y, c_z):
 
-    x_diff = np.sum(abs(s_x - c_x))
-    y_diff = np.sum(abs(s_y - c_y))
-    z_diff = np.sum(abs(s_z - c_z))
+    x_diff = np.sum(abs(t_x - c_x))
+    y_diff = np.sum(abs(t_y - c_y))
+    z_diff = np.sum(abs(t_z - c_z))
     assert (np.sum(x_diff).size == 1 and np.sum(y_diff).size == 1 and np.sum(z_diff).size == 1)
 
     reward = - (x_diff + y_diff + z_diff) ** 2

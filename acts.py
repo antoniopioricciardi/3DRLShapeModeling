@@ -75,7 +75,7 @@ def neighborhood_linear3d(actions, c_x, c_y, c_z, spread, point_idx, neighbors, 
     :param neighbors_movement_scale:
     :return:
     """
-    neighbors = [1,2]
+    # neighbors = [1,2]
     c_x, c_y, c_z = move_point3d(point_idx, actions[0], actions[1], actions[2], c_x, c_y, c_z, spread)
     c_x, c_y, c_z = move_neighbors3d(point_idx, neighbors,
                                      actions[0]*neighbors_movement_scale, actions[1]*neighbors_movement_scale, actions[2]*neighbors_movement_scale,

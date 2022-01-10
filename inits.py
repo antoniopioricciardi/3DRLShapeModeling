@@ -18,13 +18,13 @@ def rand_init2d(num_points=4, center_x=0, center_y=0, span_x=0.5, span_y=0.5, sp
     return x*spread, y*spread
 
 
-def rand_init3d(num_triangles=1, num_points=3, center_x=0, center_y=0, center_z=0, span_x=1, span_y=1, span_z=1, spread=5):
+def rand_init3d(num_points=3, center_x=0, center_y=0, center_z=0, span_x=1, span_y=1, span_z=1, spread=5):
     x = np.zeros(num_points) + center_x + np.random.uniform(-span_x,span_x, num_points)
     y = np.zeros(num_points) + center_y + np.random.uniform(-span_y,span_y, num_points)
     z = np.zeros(num_points) + center_z + np.random.uniform(-span_z,span_z, num_points)
     tri = np.arange(num_points)
     tri = tri.reshape(1, len(tri))
-    return x*spread, y*spread, z*spread, tri
+    return x*spread, y*spread, z*spread
 
 
 def sphere(num_points=50, center_x=0, center_y=0, center_z=0, span_x=0.5, span_y=0.5, span_z=0.5, spread=5):

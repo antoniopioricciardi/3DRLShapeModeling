@@ -48,3 +48,9 @@ def sorted_distance_neighborhood(distance_matrix):
     sorting_idx = np.argsort(distance_matrix)
     sorted_matrix = np.sort(distance_matrix)
     return sorted_matrix, sorting_idx
+
+
+def get_neighborhood_mask(num_points, central_point):
+    neighborhood = np.arange(num_points)
+    neighborhood = np.delete(neighborhood, central_point)
+    return neighborhood

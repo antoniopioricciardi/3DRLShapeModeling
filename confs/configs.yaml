@@ -1,19 +1,20 @@
 defaults:
   - inits_c:
     - rand
-  - inits_s:
+  - inits_t:
     - rand
   - neighborhood:
     - index
   - actions:
-    - gaussian3d # neighborhood_linear3d # _anylength
+    - neighborhood_linear3d # _anylength
   - rewards:
     - dummy
   - policies:
     - mlp
 
-model_name: gaussian_model  # filename of the model to be saved.
+model_name: linear_model  # filename of the model to be saved.
 seed: 42
+num_points: 3
 num_triangles: 1
 steps_per_vertex: 15
 neighbors_movement_scale: 0.5
