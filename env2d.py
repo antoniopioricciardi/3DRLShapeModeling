@@ -93,7 +93,7 @@ class CanvasModeling(gym.Env):
         self.c_x, self.c_y = self.f_act(actions, self.c_x, self.c_y)
         reward = self.f_reward(c_x=self.c_x, c_y=self.c_y,
                                t_x=self.t_x, t_y=self.t_y)
-        reward = normalize_reward(reward, (self.spread * 2 * self.num_points) ** 2)  # a scalar
+        # reward = normalize_reward(reward, (self.spread * 2 * self.num_points) ** 2)  # a scalar
 
         self.state = np.float32(np.concatenate((self.t_x-self.c_x, self.t_y-self.c_y)))
         self.step_n += 1
