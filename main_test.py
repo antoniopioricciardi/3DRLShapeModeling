@@ -92,7 +92,7 @@ def run(cfg):
     spread = cfg.spread
     max_steps = cfg.max_steps
     args_env = cfg
-
+    num_points = cfg.num_points
     num_triangles = cfg.num_triangles
     steps_per_vertex = cfg.steps_per_vertex
 
@@ -109,13 +109,12 @@ def run(cfg):
     # model_name = cfg.model_name
 
 
-    model_path_list = [cfg.model_name, '-seed_' + str(cfg.seed),
+    model_path_list = [cfg.model_name, 'numpoints_' + str(num_points), '-seed_' + str(cfg.seed),
                        # '-totaltimesteps' + str(timesteps),'-maxsteps_' + str(max_steps),
                        '-spread_' + str(spread),
                        '-lr_' + str(learning_rate), '-sigma_' + str(cfg.sigma),
                        '-neighborsmovementscale_' + str(cfg.neighbors_movement_scale)
                        ]
-
     model_name = ''
     for dir_name in model_path_list:
         model_name += dir_name
@@ -123,7 +122,7 @@ def run(cfg):
     # Initialise a W&B run
     wandb_logger = wandb.init(
         name=model_name, # experiment_name,
-        project="3Dmodeling_gaussian_test",
+        project="TEST-3Dmodeling_gaussian_linear",
         config=cfg,
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
         monitor_gym=True,  # auto-upload the videos of agents playing the game
