@@ -82,7 +82,7 @@ def run(cfg):
     #     os.makedirs(model_path)
 
     # TODO: until here
-    model_path_list = [cfg.model_name, 'numpoints_' + str(num_points), '-seed_' + str(cfg.seed),
+    model_path_list = [cfg.model_name, '-numpoints_' + str(num_points), '-seed_' + str(cfg.seed),
                        # '-totaltimesteps' + str(timesteps),'-maxsteps_' + str(max_steps),
                        '-spread_' + str(spread),
                        '-lr_' + str(learning_rate), '-sigma_' + str(cfg.sigma),
