@@ -83,6 +83,7 @@ class CanvasModeling(gym.Env):
         self.c_x, self.c_y, self.c_z = self.f_inits_c()
 
         self.neighborhood_mask = np.arange(self.num_points)
+
         self.old_neighborhood_mask = self.neighborhood_mask.copy()
 
         self.state = np.float32(np.concatenate((self.t_x-self.c_x, self.t_y-self.c_y, self.t_z-self.c_z)))
@@ -95,12 +96,13 @@ class CanvasModeling(gym.Env):
 
     def step(self, actions):
         self.step_n += 1
-        new_c_x, new_c_y, new_c_z = self.f_act(actions, self.c_x, self.c_y, self.c_z,
+        # print(self.c_x)
+        new_c_x, new_c_y, new_c_z = self.f_act(actions, self.c_x.copy(), self.c_y.copy(), self.c_z.copy(),
                                                point_idx=self.neighborhood_mask[0], neighbors=self.neighborhood_mask[1:])
-
-        self.c_x[self.neighborhood_mask] = new_c_x
-        self.c_y[self.neighborhood_mask] = new_c_y
-        self.c_z[self.neighborhood_mask] = new_c_z
+        # print(self.c_x, self.neighborhood_mask, actions[0], new_c_x)
+        self.c_x = new_c_x
+        self.c_y = new_c_y
+        self.c_z = new_c_z
 
         reward = self.f_reward(c_x=self.c_x, c_y=self.c_y, c_z=self.c_z,
                                t_x=self.t_x, t_y=self.t_y, t_z=self.t_z)
@@ -108,7 +110,6 @@ class CanvasModeling(gym.Env):
         if self.step_n % (self.steps_per_vertex + 1) == 0:
             self.old_neighborhood_mask = self.neighborhood_mask.copy()
             self.neighborhood_mask = np.roll(self.neighborhood_mask, -1)
-
             """ part below unused for now """
             self.vertex_idx += 1
             if self.vertex_idx == self.num_points:

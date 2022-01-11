@@ -22,9 +22,9 @@ sigma: 0.1
 spread : 5
 
 is_testing: False
-total_timesteps : 150000  # total training steps
-max_steps : 450  # n steps before resetting the env
-learning_rate : 0.0001
+total_timesteps : 100000  # total training steps
+max_steps : 300  # n steps before resetting the env
+learning_rate : 0.001
 update_step: 2048
 log_video_steps : 5000
 envs : 1
