@@ -12,11 +12,13 @@ defaults:
   - policies:
     - mlp
 
+is_training: False
 is_testing: True
 save_animation_gif: False
 
 model_name: gaussian_model  # filename of the model to be saved.
 seed: 42
+num_points: 3
 num_triangles: 1
 steps_per_vertex: 15
 neighbors_movement_scale: 0.5

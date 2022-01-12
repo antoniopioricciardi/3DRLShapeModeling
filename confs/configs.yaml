@@ -21,7 +21,9 @@ neighbors_movement_scale: 0.5
 sigma: 0.1
 spread : 5
 
+is_training: True
 is_testing: False
+save_animation_gif: False
 total_timesteps : 100000  # total training steps
 max_steps : 300  # n steps before resetting the env
 learning_rate : 0.001

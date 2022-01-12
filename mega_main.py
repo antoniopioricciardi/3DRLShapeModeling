@@ -1,18 +1,10 @@
 import os
-import gym
 import torch
+import argparse
 import numpy as np
-import matplotlib.pyplot as plt
-
-
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 
 from stable_baselines3 import HerReplayBuffer, SAC, DDPG, PPO
-from stable_baselines3.her.goal_selection_strategy import GoalSelectionStrategy
-
-from stable_baselines3.common.logger import configure
 
 from wandb.integration.sb3 import WandbCallback
 from callbackutils import WandbTrainCallback
@@ -26,15 +18,25 @@ from env3d_triangles import CanvasModeling
 from stable_baselines3.common.env_checker import check_env
 
 from omegaconf import DictConfig, OmegaConf
-from hydra.core.hydra_config import HydraConfig
+from rich.console import Console
+from rich.table import Table
+from names import Filenames
+
 import hydra 
 import random
 from hydra.utils import get_original_cwd, to_absolute_path
+import trainer
+import tester
 
 MODELS_PATH = 'models'
 VIDEOS_PATH = 'videos'
 LOGS_PATH = 'logs'
 RESULTS_PATH = 'results'
+
+metrics = ['area_diff', 'abs_dist', 'centr_x_difference', 'centr_y_difference']
+avg_metrics = {'area_diff': [], 'abs_dist': [], 'centr_x_difference': [], 'centr_y_difference': []}
+shape_metrics = {}
+avg_shape_metrics = {}
 
 if not os.path.exists(MODELS_PATH):
     os.mkdir(MODELS_PATH)
@@ -55,6 +57,7 @@ def run(cfg):
     set_random_seed(cfg.seed)
     # torch.use_deterministic_algorithms(mode=True)  # probably to slow down code, based on functions we use, might not always work
     # Settings
+    save_animation_gif = cfg.save_animation_gif
     num_triangles = cfg.num_triangles
     steps_per_vertex = cfg.steps_per_vertex
     num_points = cfg.num_points
@@ -131,40 +134,105 @@ def run(cfg):
 
     # define the model policy
     policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
-    # policy_kwargs = dict(
-    # features_extractor_class=poly.CustomPerc,
-    # features_extractor_kwargs=dict(features_dim=128)
-    # )
-    # policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 512, 512, 512]))
-    # print(policy_kwargs)
+
     policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
 
-    model = model_class("MlpPolicy", env, verbose=1,policy_kwargs=policy_kwargs, tensorboard_log=f"runs/{wandb_logger.id}",
-                        learning_rate=learning_rate, seed=cfg.seed)# , n_steps = cfg.update_step)
-    # policy_kwargs['net_arch'][-1]['pi']
+    if cfg.is_training:
+        model = model_class("MlpPolicy", env, verbose=1,policy_kwargs=policy_kwargs, tensorboard_log=f"runs/{wandb_logger.id}",
+                            learning_rate=learning_rate, seed=cfg.seed)# , n_steps = cfg.update_step)
+        model = trainer.train(cfg, model, wandb_logger, timesteps)
+        # shutdown the logger
+        if wandb_logger is not None:
+            wandb_logger.finish()
 
-    # TODO: Sposta, ma prima review della callback esistente
-    wandb_callback = WandbTrainCallback()
-    # START TRAINING
-    model.learn(total_timesteps=timesteps, log_interval=2)#, callback=wandb_callback)
+        # Save
+        model.save(os.path.join(MODELS_PATH, model_name))
+        env.close()
+    else:
+        target_shape_path = cfg.inits_s.from_shape.shape_path
+        target_shape_name = target_shape_path[target_shape_path.rfind("/") + 1:]
+        canvas_shape_path = cfg.inits_c.from_shape.shape_path
+        canvas_shape_name = canvas_shape_path[canvas_shape_path.rfind("/") + 1:]
+        shape_name = target_shape_name + '--' + canvas_shape_name
 
-    # shutdown the logger
-    if wandb_logger is not None:
-        wandb_logger.finish()
+        res_path = os.path.join(RESULTS_PATH, shape_name)
 
-    # Save
-    model.save(os.path.join(MODELS_PATH, model_name))
-    # model.save(os.path.join(model_path, cfg.model_name))
-   
-    # Close Environment
-    env.close()
+        model = model_class.load(os.path.join(MODELS_PATH, model_name), env=env, policy_kwargs=policy_kwargs,
+                                 tensorboard_log=f"runs/{wandb_logger.id}")
+        area_diff, abs_dist, centroid_x_diff, centroid_y_diff = tester.test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path)
+        env.close()
+
+        if shape_metrics.get(shape_name) is None:
+            shape_metrics[shape_name] = dict()
+            shape_metrics[shape_name]['area_diff'] = [area_diff]
+            shape_metrics[shape_name]['abs_dist'] = [abs_dist]
+            shape_metrics[shape_name]['centr_x_difference'] = [centroid_x_diff]
+            shape_metrics[shape_name]['centr_y_difference'] = [centroid_y_diff]
+
+            avg_shape_metrics[shape_name] = dict()
+            avg_shape_metrics[shape_name]['area_diff'] = area_diff
+            avg_shape_metrics[shape_name]['abs_dist'] = abs_dist
+            avg_shape_metrics[shape_name]['centr_x_difference'] = centroid_x_diff
+            avg_shape_metrics[shape_name]['centr_y_difference'] = centroid_y_diff
+        else:
+            shape_metrics[shape_name]['area_diff'].append(area_diff)
+            shape_metrics[shape_name]['abs_dist'].append(abs_dist)
+            shape_metrics[shape_name]['centr_x_difference'].append(centroid_x_diff)
+            shape_metrics[shape_name]['centr_y_difference'].append(centroid_y_diff)
+
+            avg_shape_metrics[shape_name]['area_diff'] = np.mean(shape_metrics[shape_name]['area_diff'])
+            avg_shape_metrics[shape_name]['abs_dist'] = np.mean(shape_metrics[shape_name]['abs_dist'])
+            avg_shape_metrics[shape_name]['centr_x_difference'] = np.mean(
+                shape_metrics[shape_name]['centr_x_difference'])
+            avg_shape_metrics[shape_name]['centr_y_difference'] = np.mean(
+                shape_metrics[shape_name]['centr_y_difference'])
 
 
-@hydra.main(config_path="confs", config_name="configs.yaml")
+# conf_name = "configs.yaml"
+parser = argparse.ArgumentParser(description="DeepRL Shape Modeling")
+# '-something' <- optional args
+# 'something' <- non optional args
+parser.add_argument('-traintest', type=str, default='test')
+# parse the args
+args = parser.parse_args()
+# access parameters with args.argument
+
+if args.traintest == 'test':
+    Filenames.conf_name = 'configs_test.yaml'
+    # conf_name = 'configs_test.yaml'
+
+@hydra.main(config_path="confs", config_name=Filenames.conf_name)  # "configs.yaml")
 def main(cfg: DictConfig) -> None:
     OmegaConf.resolve(cfg)
-    print(OmegaConf.to_yaml(cfg,resolve=True))
+    print(OmegaConf.to_yaml(cfg, resolve=True))
     run(cfg)
+    if cfg.is_testing:
+        console = Console()
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Shape", style="dim", width=12)
+        for el in metrics:
+            table.add_column(el, justify="center")
+        for el in avg_shape_metrics.keys():
+            row_values = [el] + list(avg_shape_metrics.get(el).values())
+            table.add_row(*(str(r) for r in row_values))
+
+        # TODO: make function
+        results_str = "shape"
+        for name in metrics:
+            results_str += ',' + name
+        results_str += '\n'
+        for shape in avg_shape_metrics.keys():
+            results_str += shape  # <- maybe cast to str() to be absolutely safe
+            for metric_name in avg_shape_metrics[shape].keys():
+                results_str += ',' + str(avg_shape_metrics[shape][metric_name])
+            results_str += '\n'
+
+        with open('results.csv', 'w') as f:
+            f.write(results_str)
+
+        console.print(table)
+
 
 if __name__ == '__main__':
     main()
