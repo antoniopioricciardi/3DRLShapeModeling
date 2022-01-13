@@ -88,7 +88,7 @@ def load_shape_old(spread=5, num_triangles=0, shape_path='./shapes/25.ply'):
     return t_x * spread, t_y * spread, t_z * spread, c_x * spread, c_y * spread, c_z * spread, tri_list
 
 
-def load_shape(shape_path='./shapes/25.ply', simplify=True, normalize=False):
+def load_shape(shape_path='./shapes/25.ply', simplify=False, normalize=False):
     mesh, V, F = load_mesh_new(shape_path, simplify, normalize)
     V = np.array(mesh.vertices)
     #adj_matrix, dist_matrix

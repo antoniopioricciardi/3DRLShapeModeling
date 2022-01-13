@@ -1,0 +1,3 @@
+load_shape:
+  _target_: inits.load_shape
+  shape_path: ./shapes/25.ply

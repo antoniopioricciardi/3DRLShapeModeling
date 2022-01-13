@@ -1,8 +1,8 @@
 defaults:
   - inits_c:
-    - load_shape_new
-  - inits_s:
-    - load_shape_new
+    - load_shape
+  - inits_t:
+    - load_shape
   - neighborhood:
     - index
   - actions:
@@ -12,6 +12,7 @@ defaults:
   - policies:
     - mlp
 
+type: test
 is_training: False
 is_testing: True
 save_animation_gif: False

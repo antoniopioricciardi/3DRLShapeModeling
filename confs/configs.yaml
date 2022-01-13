@@ -12,6 +12,7 @@ defaults:
   - policies:
     - mlp
 
+type: train
 model_name: linear_model  # filename of the model to be saved.
 seed: 42
 num_points: 3

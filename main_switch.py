@@ -1,32 +1,25 @@
 import os
 import torch
-import argparse
-import numpy as np
-from stable_baselines3.common.utils import set_random_seed
-
-from stable_baselines3 import HerReplayBuffer, SAC, DDPG, PPO
-
-from wandb.integration.sb3 import WandbCallback
-from callbackutils import WandbTrainCallback
+import hydra
 import wandb
-from stable_baselines3.common.envs import BitFlippingEnv
-from stable_baselines3.common.env_util import make_vec_env
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import VecVideoRecorder, VecMonitor
-#from env3d_triangles import CanvasModeling
-from env3d_triangles import CanvasModeling
-from stable_baselines3.common.env_checker import check_env
-
-from omegaconf import DictConfig, OmegaConf
-from rich.console import Console
-from rich.table import Table
-from names import Filenames
-
-import hydra 
 import random
-from hydra.utils import get_original_cwd, to_absolute_path
 import trainer
 import tester
+import numpy as np
+
+from names import Filenames
+from rich.table import Table
+from rich.console import Console
+from env3d_triangles import CanvasModeling
+from omegaconf import DictConfig, OmegaConf
+from wandb.integration.sb3 import WandbCallback
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3 import HerReplayBuffer, SAC, DDPG, PPO
+from stable_baselines3.common.vec_env import VecVideoRecorder, VecMonitor
+
 
 MODELS_PATH = 'models'
 VIDEOS_PATH = 'videos'
@@ -47,7 +40,9 @@ if not os.path.exists(LOGS_PATH):
 if not os.path.exists(RESULTS_PATH):
     os.mkdir(RESULTS_PATH)
 
+
 def run(cfg):
+
     # print(to_absolute_path(''))  # this gives src path even when running with hydra
     random.seed(cfg.seed)
     np.random.seed(cfg.seed)
@@ -110,6 +105,11 @@ def run(cfg):
         verbose=2,
     )
 
+    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
+
+    model = model_class.load(os.path.join(MODELS_PATH, model_name), policy_kwargs=policy_kwargs)
+    print(model)
+    exit(3)
     # Wrapper for multi-environment
     def make_env(cfg):
         env = CanvasModeling(cfg)
@@ -136,7 +136,7 @@ def run(cfg):
 
     policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
 
-    if cfg.is_training:
+    if cfg.is_training == True:
         model = model_class("MlpPolicy", env, verbose=1, policy_kwargs=policy_kwargs,
                             tensorboard_log=f"runs/{wandb_logger.id}",
                             learning_rate=learning_rate, seed=cfg.seed)  # , n_steps = cfg.update_step)
@@ -159,6 +159,8 @@ def run(cfg):
 
         model = model_class.load(os.path.join(MODELS_PATH, model_name), env=env, policy_kwargs=policy_kwargs,
                                  tensorboard_log=f"runs/{wandb_logger.id}")
+        print('oohoh')
+        exit(4)
         area_diff, abs_dist, centroid_x_diff, centroid_y_diff = tester.test(cfg, env, model, wandb_logger, model_name,
                                                                             save_animation_gif, res_path)
         env.close()
@@ -189,54 +191,55 @@ def run(cfg):
                 shape_metrics[shape_name]['centr_y_difference'])
 
 
-# conf_name = "configs.yaml"
-parser = argparse.ArgumentParser(description="DeepRL Shape Modeling")
-# '-something' <- optional args
-# 'something' <- non optional args
-parser.add_argument('-traintest', type=str, default='train')
-print('faff')
-# parse the args
-args = parser.parse_args()
-# access parameters with args.argument
-print(args.traintest)
-if args.traintest == 'test':
-    Filenames.conf_name = 'configs_test.yaml'
-if args.traintest == 'train':
-    Filenames.conf_name = 'configs.yaml'
-    # conf_name = 'configs_test.yaml'
 
-@hydra.main(config_path="confs", config_name=Filenames.conf_name)  # "configs.yaml")
-def main(cfg: DictConfig) -> None:
+
+@hydra.main(config_path='confs', config_name="configs_test.yaml")
+def main_test(cfg: DictConfig) -> None:
+    print('ok')
     OmegaConf.resolve(cfg)
     print(OmegaConf.to_yaml(cfg, resolve=True))
     run(cfg)
-    if cfg.is_testing:
-        console = Console()
 
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Shape", style="dim", width=12)
-        for el in metrics:
-            table.add_column(el, justify="center")
-        for el in avg_shape_metrics.keys():
-            row_values = [el] + list(avg_shape_metrics.get(el).values())
-            table.add_row(*(str(r) for r in row_values))
+    console = Console()
 
-        # TODO: make function
-        results_str = "shape"
-        for name in metrics:
-            results_str += ',' + name
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Shape", style="dim", width=12)
+    for el in metrics:
+        table.add_column(el, justify="center")
+    for el in avg_shape_metrics.keys():
+        row_values = [el] + list(avg_shape_metrics.get(el).values())
+        table.add_row(*(str(r) for r in row_values))
+
+    # TODO: make function
+    results_str = "shape"
+    for name in metrics:
+        results_str += ',' + name
+    results_str += '\n'
+    for shape in avg_shape_metrics.keys():
+        results_str += shape  # <- maybe cast to str() to be absolutely safe
+        for metric_name in avg_shape_metrics[shape].keys():
+            results_str += ',' + str(avg_shape_metrics[shape][metric_name])
         results_str += '\n'
-        for shape in avg_shape_metrics.keys():
-            results_str += shape  # <- maybe cast to str() to be absolutely safe
-            for metric_name in avg_shape_metrics[shape].keys():
-                results_str += ',' + str(avg_shape_metrics[shape][metric_name])
-            results_str += '\n'
 
-        with open('results.csv', 'w') as f:
-            f.write(results_str)
+    with open('results.csv', 'w') as f:
+        f.write(results_str)
 
-        console.print(table)
+    console.print(table)
 
+
+@hydra.main(config_path='confs', config_name="configs.yaml")
+def main_train(cfg: DictConfig) -> None:
+    OmegaConf.resolve(cfg)
+    print(OmegaConf.to_yaml(cfg, resolve=True))
+    run(cfg)
 
 if __name__ == '__main__':
-    main()
+    import sys
+    type = sys.argv[1]
+
+    if type == 'type=test':
+        main_test()
+    else:
+        main_train()
+
+    # main()

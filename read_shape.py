@@ -77,7 +77,7 @@ def load_mesh(shape_path='./shapes/25.ply', simplify=False):
     return V, U, F
 
 
-def load_mesh_new(shape_path='./shapes/25.ply', simplify=True, normalize=False):
+def load_mesh_new(shape_path='./shapes/25.ply', simplify=False, normalize=False):
     # shape_path = '/Users/antonioricciardi/PycharmProjects/3DRLShapeMatching/shapes/tr_reg_000.ply'
     # shape_path = '/home/antoniopioricciardi/PycharmProjects/3DRLShapeMatching/shapes/tr_reg_000.ply'
     # TODO: non trova il path
