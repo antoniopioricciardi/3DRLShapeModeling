@@ -6,7 +6,7 @@ defaults:
   - neighborhood:
     - index
   - actions:
-    - gaussian3d # neighborhood_linear3d
+    - neighborhood_linear3d
   - rewards:
     - dummy
   - policies:
@@ -17,7 +17,7 @@ is_training: False
 is_testing: True
 save_animation_gif: False
 
-model_name: gaussian_model  # filename of the model to be saved.
+model_name: linear_model  # filename of the model to be saved.
 seed: 42
 num_points: 3
 num_triangles: 1
@@ -28,7 +28,7 @@ spread : 5
 
 total_timesteps : 160000  # total training steps
 max_steps : 160000  # n steps before resetting the env
-learning_rate : 0.0001
+learning_rate : 0.001
 update_step: 1000
 log_video_steps : 5000
 envs : 1

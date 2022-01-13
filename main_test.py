@@ -174,7 +174,6 @@ def run(cfg):
     #                     learning_rate=learning_rate, n_steps = cfg.update_step)
 
     model = model_class.load(os.path.join(MODELS_PATH, model_name), env=env, policy_kwargs=policy_kwargs, tensorboard_log=f"runs/{wandb_logger.id}")
-
     # policy_kwargs['net_arch'][-1]['pi']
     # START TRAINING
     # model.learn(total_timesteps=timesteps, log_interval=2, callback=wandb_callback)

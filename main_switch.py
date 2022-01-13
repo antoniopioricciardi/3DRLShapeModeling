@@ -88,7 +88,11 @@ def run(cfg):
     model_name = ''
     for dir_name in model_path_list:
         model_name += dir_name
-
+    print(os.getcwd())
+    print(model_name)
+    "linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5"
+    "linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5"
+    "linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5"
     # Initialise a W&B run
     wandb_logger = wandb.init(
         name=model_name,
@@ -104,11 +108,15 @@ def run(cfg):
         model_save_path=f"models/{wandb_logger.id}",
         verbose=2,
     )
+    policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
 
-    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
+    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]), use_sde=False)
+    os.chdir('../../../')
 
     model = model_class.load(os.path.join(MODELS_PATH, model_name), policy_kwargs=policy_kwargs)
-    print(model)
+    vec_prova = np.random.random((1,9))
+    num = model.predict(vec_prova)
+    print(num)
     exit(3)
     # Wrapper for multi-environment
     def make_env(cfg):

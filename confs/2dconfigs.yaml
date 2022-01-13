@@ -27,7 +27,7 @@ sigma: 1
 spread : 5
 steps_per_round: 15
 total_timesteps : 50000  # total training steps
-max_steps : 30  # n steps before resetting the env
+max_steps : 50  # n steps before resetting the env
 learning_rate : 0.001
 update_step: 2048
 log_video_steps : 2048
