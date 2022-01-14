@@ -27,7 +27,6 @@ def no_neighbors():
 
 # def neighborhood_from_radius(pts_x, pts_y, radius):
 
-
 def triangle_neighborhood(triangles, triangle_idx, point_idx):
     """
     Returns a mask for selecting a 3-vertex coordinates from c_x,c_y,c_z and t_x,t_y,t_z
@@ -40,8 +39,8 @@ def triangle_neighborhood(triangles, triangle_idx, point_idx):
     tri_vert_list = list(triangle_vertices)
     # set the object vertex in first position (by removing it from its previous position)
     el = tri_vert_list.pop(point_idx)
-    canvas_vertex_mask = np.array([el] + tri_vert_list)
-    return canvas_vertex_mask
+    vertex_mask = np.array([el] + tri_vert_list)
+    return vertex_mask
 
 
 def sorted_distance_neighborhood(distance_matrix):

@@ -11,7 +11,6 @@ from scipy.sparse.linalg import spsolve
 import scipy as sp
 from ..normalization import normalize_vector
 
-
 def compute_distance_matrix(v, a):
     """
     given a list of vertices, a list of triangles and an adjacency matrix, compute and return the distance matrix d
@@ -34,6 +33,11 @@ def compute_adjacency_matrix(adj_list):
         adj_matrix[i][adlist] = 1
         i += 1
     return adj_matrix
+
+
+def compute_triangle_triangle_adjacency_matrix_igl(f):
+    adj_tri, adj_edge = igl.triangle_triangle_adjacency(f)
+    return adj_tri, adj_edge
 
 
 def compute_adjacency_matrix_igl(f):

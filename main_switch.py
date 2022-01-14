@@ -108,44 +108,35 @@ def run(cfg):
         model_save_path=f"models/{wandb_logger.id}",
         verbose=2,
     )
-    policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
-
-    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]), use_sde=False)
-    os.chdir('../../../')
-
-    model = model_class.load(os.path.join(MODELS_PATH, model_name), policy_kwargs=policy_kwargs)
-    vec_prova = np.random.random((1,9))
-    num = model.predict(vec_prova)
-    print(num)
-
-    exit(3)
-    # Wrapper for multi-environment
-    def make_env(cfg):
-        env = CanvasModeling(cfg)
-        k = check_env(env, warn=True)
-        env = Monitor(env, LOGS_PATH)  # record stats such as returns
-        return env
-
-    # Generate instances
-    if cfg.envs == 1:
-        env = make_vec_env(make_env, cfg.envs, env_kwargs={'cfg': args_env})
-        # env = DummyVecEnv([make_env(**args_env)])
-    else:
-        env = make_vec_env(make_env, cfg.envs, env_kwargs={'cfg': args_env})
-
-    # Wrapper for logging video
-    env = VecVideoRecorder(env, f"videos/{wandb_logger.id}",
-                           record_video_trigger=lambda x: x % cfg.log_video_steps == cfg.log_video_steps - 1,
-                           video_length=max_steps)
-
-    env.seed(cfg.seed)
-
-    # define the model policy
-    policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
-
-    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
 
     if cfg.is_training == True:
+
+        # Wrapper for multi-environment
+        def make_env(cfg):
+            env = CanvasModeling(cfg)
+            k = check_env(env, warn=True)
+            env = Monitor(env, LOGS_PATH)  # record stats such as returns
+            return env
+
+        # Generate instances
+        if cfg.envs == 1:
+            env = make_vec_env(make_env, cfg.envs, env_kwargs={'cfg': args_env})
+            # env = DummyVecEnv([make_env(**args_env)])
+        else:
+            env = make_vec_env(make_env, cfg.envs, env_kwargs={'cfg': args_env})
+
+        # Wrapper for logging video
+        env = VecVideoRecorder(env, f"videos/{wandb_logger.id}",
+                               record_video_trigger=lambda x: x % cfg.log_video_steps == cfg.log_video_steps - 1,
+                               video_length=max_steps)
+
+        env.seed(cfg.seed)
+
+        # define the model policy
+        policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
+
+        policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]))
+
         model = model_class("MlpPolicy", env, verbose=1, policy_kwargs=policy_kwargs,
                             tensorboard_log=f"runs/{wandb_logger.id}",
                             learning_rate=learning_rate, seed=cfg.seed)  # , n_steps = cfg.update_step)
@@ -166,8 +157,21 @@ def run(cfg):
 
         res_path = os.path.join(RESULTS_PATH, shape_name)
 
-        model = model_class.load(os.path.join(MODELS_PATH, model_name), env=env, policy_kwargs=policy_kwargs,
-                                 tensorboard_log=f"runs/{wandb_logger.id}")
+        # model = model_class.load(os.path.join(MODELS_PATH, model_name), env=env, policy_kwargs=policy_kwargs,
+        #                          tensorboard_log=f"runs/{wandb_logger.id}")
+
+        policy_kwargs = hydra.utils.instantiate(cfg.policies['model'], **cfg.policies.params)
+
+        policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[256, 256, 256], qf=[256, 256, 256]),
+                             use_sde=False)
+        os.chdir('../../../')
+
+        model = model_class.load(os.path.join(MODELS_PATH, model_name), policy_kwargs=policy_kwargs)
+        vec_prova = np.random.random((1, 9))
+        num = model.predict(vec_prova)
+        print(num)
+
+        exit(3)
         print('oohoh')
         exit(4)
         area_diff, abs_dist, centroid_x_diff, centroid_y_diff = tester.test(cfg, env, model, wandb_logger, model_name,

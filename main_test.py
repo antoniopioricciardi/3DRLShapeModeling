@@ -22,7 +22,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import VecVideoRecorder, VecMonitor
 # from env3d_triangles import CanvasModeling
-from env3d_gaussian import CanvasModeling
+from env3d_triangles_copy import CanvasModeling
 from stable_baselines3.common.env_checker import check_env
 
 from omegaconf import DictConfig, OmegaConf
