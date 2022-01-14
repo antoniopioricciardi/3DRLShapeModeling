@@ -117,6 +117,7 @@ def run(cfg):
     vec_prova = np.random.random((1,9))
     num = model.predict(vec_prova)
     print(num)
+
     exit(3)
     # Wrapper for multi-environment
     def make_env(cfg):
