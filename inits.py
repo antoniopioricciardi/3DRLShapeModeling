@@ -106,42 +106,42 @@ def get_coordinates(vert, spread):
     z = vert[:,2]
     return x * spread, y * spread, z * spread
 
-
-from misc_utils.shapes.operations import compute_adjacency_matrix_igl, compute_triangle_triangle_adjacency_matrix_igl
-target_mesh, target_vert, target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
-                                                       normalize=True)
-
-def vertex_mask_from_triangle_adjacency(tri_idx, adj_tri, n_hops, n_required_vertices):
-    adj_set = set()
-    # adj_set.add(tri_idx)  # should order items increasingly
-    adj_dict = dict()
-    hop_list = [tri_idx]
-    adj_dict[0] = hop_list
-
-    for hop in range(n_hops):
-        hop_list = []
-        for adj in adj_dict[hop]:
-            hop_list = list(adj_tri[adj])
-            if not adj_dict.get(hop+1):
-                adj_dict[hop+1] = []
-            adj_dict[hop+1] += hop_list
-
-    for lst in adj_dict.values():
-        for el in lst:
-            adj_set.add(el)
-
-    vertex_mask = target_tri[np.array(list(set(adj_set)))]
-    vertex_mask = list(set(np.reshape(vertex_mask, vertex_mask.shape[0] * vertex_mask.shape[1])))
-    while len(vertex_mask) < n_required_vertices:
-        vertex_mask.append(vertex_mask[-1])
-    vertex_mask = np.array(vertex_mask)
-    return vertex_mask
-
-a = compute_adjacency_matrix_igl(target_tri)
-
-adj_tri, adj_edge = compute_triangle_triangle_adjacency_matrix_igl(target_tri)
-n_hops = 1
-tri_idx = 0
-for i in range(len(target_tri)):
-    lungh = vertex_mask_from_triangle_adjacency(i, adj_tri, 2, 12)
-    print(lungh)
+#
+# from misc_utils.shapes.operations import compute_adjacency_matrix_igl, compute_triangle_triangle_adjacency_matrix_igl
+# target_mesh, target_vert, target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
+#                                                        normalize=True)
+#
+# def vertex_mask_from_triangle_adjacency(tri_idx, adj_tri, n_hops, n_required_vertices):
+#     adj_set = set()
+#     # adj_set.add(tri_idx)  # should order items increasingly
+#     adj_dict = dict()
+#     hop_list = [tri_idx]
+#     adj_dict[0] = hop_list
+#
+#     for hop in range(n_hops):
+#         hop_list = []
+#         for adj in adj_dict[hop]:
+#             hop_list = list(adj_tri[adj])
+#             if not adj_dict.get(hop+1):
+#                 adj_dict[hop+1] = []
+#             adj_dict[hop+1] += hop_list
+#
+#     for lst in adj_dict.values():
+#         for el in lst:
+#             adj_set.add(el)
+#
+#     vertex_mask = target_tri[np.array(list(set(adj_set)))]
+#     vertex_mask = list(set(np.reshape(vertex_mask, vertex_mask.shape[0] * vertex_mask.shape[1])))
+#     while len(vertex_mask) < n_required_vertices:
+#         vertex_mask.append(vertex_mask[-1])
+#     vertex_mask = np.array(vertex_mask)
+#     return vertex_mask
+#
+# # a = compute_adjacency_matrix_igl(target_tri)
+#
+# adj_tri, adj_edge = compute_triangle_triangle_adjacency_matrix_igl(target_tri)
+# n_hops = 1
+# tri_idx = 0
+# for i in range(len(target_tri)):
+#     lungh = vertex_mask_from_triangle_adjacency(i, adj_tri, 2, 12)
+#     print(lungh)

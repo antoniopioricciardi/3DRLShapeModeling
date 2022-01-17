@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 import wandb
 import imageio
-
+from env3d_triangles_testing import CanvasModelingTest
 import poly
 import os
 
@@ -16,12 +16,16 @@ import os
 
 # TODO: clean, or fix outputs and models paths from the folders created during each run
 
+from neighborhood import *
+from inits import *
+from misc_utils.shapes.operations import compute_triangle_triangle_adjacency_matrix_igl
 
-def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path):
 
+def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
+    env = CanvasModelingTest(cfg)
+    neighborhood_size = cfg.neighborhood_size
     images = []
-    obs = env.reset()
-    env.store_transition()
+    # env.store_transition()
 
     if save_animation_gif:
         img = model.env.render(mode='rgb_array')    # print(env.l2_distances, 'obs:', obs)
@@ -38,7 +42,8 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
     tqdm_interval_update = 500  # if we update tqdm too often it will strongly slow down our code
 
     import time
-
+    obs = env.reset(neighborhood_size)
+    # TODO: break quando errore minimo raggiunto
     start = time.time()
     with tqdm(total=cfg.max_steps) as pbar:
         while not done:
@@ -51,10 +56,9 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
             # dists_2.append(env.l2_distances[1])
             action, _states = model.predict(obs, deterministic=True)
             obs, rewards, done, info = env.step(action)
-            env.store_transition()
+            # env.store_transition()
             # vid.capture_frame()
             if cfg.is_testing and env.total_step_n % 500 == 0:
-
                 area_diff = abs(env.convex_hull_area_source - env.convex_hull_area_canvas)
                 abs_dist = env.abs_dist
                 source_centroid = env.source_centroid
@@ -90,14 +94,18 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
                     img = model.env.render(mode='rgb_array')
             test_score += rewards
 
+            if info['sweep_completed']:
+                obs = env.reset(neighborhood_size)
+
     end = time.time() - start
+    exit(5)
     # print(end)
     if not os.path.exists(res_path):
         os.mkdir(res_path)
     res_path = os.path.join(res_path, 'transitions')
     if not os.path.exists(res_path):
         os.mkdir(res_path)
-    env.save_transitions(os.path.join(res_path, model_name))
+    # env.save_transitions(os.path.join(res_path, model_name))
 
     # shutdown the logger
     if wandb_logger is not None:

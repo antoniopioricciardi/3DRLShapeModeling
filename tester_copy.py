@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 import wandb
 import imageio
-
+from env3d_triangles_testing import CanvasModelingTest
 import poly
 import os
 
@@ -16,12 +16,42 @@ import os
 
 # TODO: clean, or fix outputs and models paths from the folders created during each run
 
+from neighborhood import *
+from inits import *
+from misc_utils.shapes.operations import compute_triangle_triangle_adjacency_matrix_igl
 
-def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path):
 
+def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
+    env = CanvasModelingTest(cfg)
+    n_hops = 0
+    spread = 5
+    neighborhood_size = cfg.neighborhood_size
+    target_mesh, target_vert, target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
+                                                           normalize=True)
+    shape_t_x, shape_t_y, shape_t_z = get_coordinates(target_vert, spread)
+    # canv_mesh, canvas_vert, self.canvas_tri = sphere_from_mesh(target_vert, self.triangles)
+    canvas_mesh, canvas_vert, canvas_tri = load_shape('shapes/smpl_base_neutro_rem.ply', simplify=False,
+                                                           normalize=True)
+    shape_c_x, shape_c_y, shape_c_z = get_coordinates(canvas_vert, spread)
+    # print(self.s_x.min(), self.s_x.max(), '--', self.s_y.min(), self.s_y.max(), '--', self.s_z.min(), self.s_z.max())
+    # print(self.c_x.min(), self.c_x.max(), '--', self.c_y.min(), self.c_y.max(), '--', self.c_z.min(), self.c_z.max())
+    # self.s_x, self.s_y, self.s_z, self.triangles = self.f_inits_s()
+    # self.c_x, self.c_y, self.c_z, _ = from_shape(shape_path='./shapes/smpl_base_neutro_rem.ply', normalize=True)
+
+    adj_tri, adj_edge = compute_triangle_triangle_adjacency_matrix_igl(target_tri)
+
+    # TODO: might be worth precomputing the vertex adjacency
+    neighborhood_mask = vertex_mask_from_triangle_adjacency(canvas_tri, 0, adj_tri, n_hops,
+                                                                 neighborhood_size)
     images = []
-    obs = env.reset()
-    env.store_transition()
+    t_x = shape_t_x[neighborhood_mask]
+    t_y = shape_t_y[neighborhood_mask]
+    t_z = shape_t_z[neighborhood_mask]
+    c_x = shape_c_x[neighborhood_mask]
+    c_y = shape_c_y[neighborhood_mask]
+    c_z = shape_c_z[neighborhood_mask]
+    obs = env.reset(t_x, t_y, t_z, c_x, c_y, c_z)
+    # env.store_transition()
 
     if save_animation_gif:
         img = model.env.render(mode='rgb_array')    # print(env.l2_distances, 'obs:', obs)
@@ -39,6 +69,7 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
 
     import time
 
+    # TODO: break quando errore minimo raggiunto
     start = time.time()
     with tqdm(total=cfg.max_steps) as pbar:
         while not done:
@@ -49,12 +80,13 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
             steps_list.append(i)
             # dists_1.append(env.l2_distances[0])
             # dists_2.append(env.l2_distances[1])
+            print(neighborhood_mask.shape)
+            print(obs.shape)
             action, _states = model.predict(obs, deterministic=True)
             obs, rewards, done, info = env.step(action)
-            env.store_transition()
+            # env.store_transition()
             # vid.capture_frame()
-            if cfg.is_testing and env.total_step_n % 500 == 0:
-
+            if False and (cfg.is_testing and env.total_step_n % 500 == 0):
                 area_diff = abs(env.convex_hull_area_source - env.convex_hull_area_canvas)
                 abs_dist = env.abs_dist
                 source_centroid = env.source_centroid
@@ -89,6 +121,10 @@ def test(cfg, env, model, wandb_logger, model_name, save_animation_gif, res_path
                     images.append(img)
                     img = model.env.render(mode='rgb_array')
             test_score += rewards
+
+            if info['sweep_completed']:
+                print('FATTO')
+                exit(3)
 
     end = time.time() - start
     # print(end)

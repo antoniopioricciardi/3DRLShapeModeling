@@ -10,7 +10,6 @@ from inits import *
 import io
 import hydra
 import pickle
-from misc_utils.shapes.operations import compute_triangle_triangle_adjacency_matrix_igl
 
 def plot3(fig):
     with io.BytesIO() as buff:
@@ -37,7 +36,6 @@ class CanvasModelingTest:
         self.neighbors_movement_scale = cfg.neighbors_movement_scale
         self.max_steps = cfg.max_steps
         self.is_testing = cfg.is_testing
-        self.n_hops = 0
 
         self.step_n = 0
         self.total_step_n = 0
@@ -77,59 +75,51 @@ class CanvasModelingTest:
             dtype=np.float32,
         )
 
-        target_mesh, target_vert, target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
-                                                          normalize=True)
-        self.shape_t_x, self.shape_t_y, self.shape_t_z = get_coordinates(target_vert, self.spread)
-        # canv_mesh, canvas_vert, self.canvas_tri = sphere_from_mesh(target_vert, self.triangles)
-        self.canvas_mesh, self.canvas_vert, self.canvas_tri = load_shape('shapes/smpl_base_neutro_rem.ply', simplify=False,
-                                                          normalize=True)
-        self.shape_c_x, self.shape_c_y, self.shape_c_z = get_coordinates(self.canvas_vert, self.spread)
-        self.adj_tri, self.adj_edge = compute_triangle_triangle_adjacency_matrix_igl(target_tri)
-
         self.triangle_idx = 0
 
-    def reset(self, neighborhood_size):
+    def reset(self, t_x, t_y, t_z, c_x, c_y, c_z):
         self.n_rolls = 0
         self.step_n = 0
         self.vertex_idx = 0  # for choosing the vertex to move
-        # self.triangle_idx = 0
+        self.triangle_idx = 0
         self.done = False
         # self.t_x, self.t_y, self.t_z = self.f_inits_t()
         # self.c_x, self.c_y, self.c_z = self.f_inits_c()
-        self.neighborhood_size = neighborhood_size
+
 
         # canvas_vertex_mask = triangle_neighborhood(self.canvas_tri, self.triangle_idx, self.vertex_idx)
-        self.vertex_mask = vertex_mask_from_triangle_adjacency(self.canvas_tri, self.triangle_idx, self.adj_tri, self.n_hops,
-                                                                self.neighborhood_size)
-
         self.neighborhood_mask = np.arange(self.num_points)
+
         self.old_neighborhood_mask = self.neighborhood_mask.copy()
 
-        self.t_x = self.shape_t_x[self.vertex_mask]
-        self.t_y = self.shape_t_y[self.vertex_mask]
-        self.t_z = self.shape_t_z[self.vertex_mask]
-        self.c_x = self.shape_c_x[self.vertex_mask]
-        self.c_y = self.shape_c_y[self.vertex_mask]
-        self.c_z = self.shape_c_z[self.vertex_mask]
+        self.t_x = t_x
+        self.t_y = t_y
+        self.t_z = t_z
+        self.c_x = c_x
+        self.c_y = c_y
+        self.c_z = c_z
+
+        # self.t_x = self.t_x[self.neighborhood_mask]
+        # self.t_y = self.t_y[self.neighborhood_mask]
+        # self.t_z = self.t_z[self.neighborhood_mask]
+        # self.c_x = self.c_x[self.neighborhood_mask]
+        # self.c_y = self.c_y[self.neighborhood_mask]
+        # self.c_z = self.c_z[self.neighborhood_mask]
 
         self.state = np.float32(np.concatenate((self.t_x-self.c_x, self.t_y-self.c_y, self.t_z-self.c_z)))
 
-        if self.is_testing:
-            self.abs_dist, self.source_centroid, self.canvas_centroid, self.convex_hull_area_source, self.convex_hull_area_canvas = compute_metrics3d(
-                self.shape_t_x, self.shape_t_y, self.shape_t_z, self.shape_c_x, self.shape_c_y, self.shape_c_z)
-        self.triangle_idx += 1
-        if self.triangle_idx == len(self.canvas_tri):
-            self.triangle_idx = 0
+        # if self.is_testing:
+        #     self.abs_dist, self.source_centroid, self.canvas_centroid, self.convex_hull_area_source, self.convex_hull_area_canvas = compute_metrics3d(
+        #         self.t_x, self.t_y, self.t_z, self.c_x, self.c_y, self.c_z)
 
         return self.state
 
     def step(self, actions):
         self.step_n += 1
-        self.total_step_n += 1
         sweep_completed = False
 
         # print(self.c_x)
-        # print(self.c_x, self.neighborhood_mask, actions[0])
+        print(self.c_x, self.neighborhood_mask, actions[0])
 
         new_c_x, new_c_y, new_c_z = self.f_act(actions, self.c_x.copy(), self.c_y.copy(), self.c_z.copy(),
                                                point_idx=self.neighborhood_mask[0], neighbors=self.neighborhood_mask[1:])
@@ -159,16 +149,13 @@ class CanvasModelingTest:
                                                 self.t_y[self.neighborhood_mask]-self.c_y[self.neighborhood_mask],
                                                 self.t_z[self.neighborhood_mask]-self.c_z[self.neighborhood_mask])))
 
-        self.shape_c_x[self.vertex_mask] = self.c_x
-        self.shape_c_y[self.vertex_mask] = self.c_y
-        self.shape_c_z[self.vertex_mask] = self.c_z
-        if self.is_testing and self.total_step_n % 500 == 0:
-            self.abs_dist, self.source_centroid, self.canvas_centroid, self.convex_hull_area_source, self.convex_hull_area_canvas = compute_metrics3d(
-                self.shape_t_x, self.shape_t_y, self.shape_t_z, self.shape_c_x, self.shape_c_y, self.shape_c_z)
+        # if self.is_testing and self.total_step_n % 500 == 0:
+        #     self.abs_dist, self.source_centroid, self.canvas_centroid, self.convex_hull_area_source, self.convex_hull_area_canvas = compute_metrics3d(
+        #         self.t_x, self.t_y, self.t_z, self.c_x, self.c_y, self.c_z)
 
         info = {"is_success": False, "sweep_completed": sweep_completed}
-        if self.total_step_n == self.max_steps:
-            self.done = True
+        # if self.step_n == self.max_steps:
+        #     self.done = True
         return self.state, reward, self.done, info
 
     def render(self, mode='human', close=False):
@@ -194,47 +181,3 @@ class CanvasModelingTest:
         image = plot3(fig)
         plt.close()
         return image
-
-    def store_transition(self):
-        # contains the the status of the whole set of vertices at that timestep
-        self.canvas_vertices_transitions[self.step_n][0] = self.c_x
-        self.canvas_vertices_transitions[self.step_n][1] = self.c_y
-        self.canvas_vertices_transitions[self.step_n][2] = self.c_z
-        # contains the set of vertices modified during current step
-        self.canvas_transition_matrix[self.step_n] = np.concatenate((
-                                                              self.c_x[self.canvas_vertex_mask],
-                                                              self.c_y[self.canvas_vertex_mask],
-                                                              self.c_z[self.canvas_vertex_mask])).reshape(3,3)
-
-        self.vertex_masks_transitions[self.step_n] = np.concatenate((self.target_vertex_mask,
-                                                                     self.canvas_vertex_mask)).reshape((2,3))
-        self.actions_transitions[self.step_n] = self.actions_to_save
-        self.states_transitions[self.step_n] = self.state
-        # save point configuration as 33 and 66 % of the execution
-        if self.total_step_n == (self.total_timesteps//0.33):
-            self.config_33[0] = self.c_x
-            self.config_33[1] = self.c_y
-            self.config_33[2] = self.c_z
-
-        if self.total_step_n == (self.total_timesteps//0.66):
-            self.config_66[0] = self.c_x
-            self.config_66[1] = self.c_y
-            self.config_66[2] = self.c_z
-
-
-    def save_transitions(self, filename):
-        # open a file, where you ant to store the data
-        file = open(filename, 'wb')
-
-        final_configuration = np.zeros((3, len(self.c_x)))
-        final_configuration[0] = self.c_x
-        final_configuration[1] = self.c_y
-        final_configuration[2] = self.c_z
-
-        transitions = {'target_vertices': self.target_vertices, 'target_triangles': self.triangles, 'canvas_triangles': self.canvas_tri,
-                       'canvas_vertices_transitions': self.canvas_vertices_transitions,
-            'states_transitions': self.states_transitions, 'actions_transitions': self.actions_transitions,
-            'canvas_transition_matrix': self.canvas_transition_matrix, 'vertex_masks': self.vertex_masks_transitions,
-                       '33_config': self.config_33, '66_config': self.config_66, 'final_configuration': final_configuration}
-        pickle.dump(transitions, file)
-        file.close()

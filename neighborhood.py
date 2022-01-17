@@ -53,3 +53,30 @@ def get_neighborhood_mask(num_points, central_point):
     neighborhood = np.arange(num_points)
     neighborhood = np.delete(neighborhood, central_point)
     return neighborhood
+
+
+def vertex_mask_from_triangle_adjacency(triangles, tri_idx, adj_tri, n_hops, n_required_vertices):
+    adj_set = set()
+    # adj_set.add(tri_idx)  # should order items increasingly
+    adj_dict = dict()
+    hop_list = [tri_idx]
+    adj_dict[0] = hop_list
+
+    for hop in range(n_hops):
+        hop_list = []
+        for adj in adj_dict[hop]:
+            hop_list = list(adj_tri[adj])
+            if not adj_dict.get(hop+1):
+                adj_dict[hop+1] = []
+            adj_dict[hop+1] += hop_list
+
+    for lst in adj_dict.values():
+        for el in lst:
+            adj_set.add(el)
+
+    vertex_mask = triangles[np.array(list(set(adj_set)))]
+    vertex_mask = list(set(np.reshape(vertex_mask, vertex_mask.shape[0] * vertex_mask.shape[1])))
+    while len(vertex_mask) < n_required_vertices:
+        vertex_mask.append(vertex_mask[-1])
+    vertex_mask = np.array(vertex_mask)
+    return vertex_mask

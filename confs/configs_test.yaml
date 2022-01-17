@@ -25,9 +25,10 @@ steps_per_vertex: 15
 neighbors_movement_scale: 0.5
 sigma: 0.1
 spread : 5
+neighborhood_size: 3
 
 total_timesteps : 160000  # total training steps
-max_steps : 160000  # n steps before resetting the env
+max_steps : 1600  # n steps before resetting the env
 learning_rate : 0.001
 update_step: 1000
 log_video_steps : 5000

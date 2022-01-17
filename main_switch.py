@@ -167,16 +167,8 @@ def run(cfg):
         os.chdir('../../../')
 
         model = model_class.load(os.path.join(MODELS_PATH, model_name), policy_kwargs=policy_kwargs)
-        vec_prova = np.random.random((1, 9))
-        num = model.predict(vec_prova)
-        print(num)
-
-        exit(3)
-        print('oohoh')
-        exit(4)
-        area_diff, abs_dist, centroid_x_diff, centroid_y_diff = tester.test(cfg, env, model, wandb_logger, model_name,
+        area_diff, abs_dist, centroid_x_diff, centroid_y_diff = tester.test(cfg, model, wandb_logger, model_name,
                                                                             save_animation_gif, res_path)
-        env.close()
 
         if shape_metrics.get(shape_name) is None:
             shape_metrics[shape_name] = dict()
