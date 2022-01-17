@@ -15,7 +15,7 @@ defaults:
 type: test
 is_training: False
 is_testing: True
-save_animation_gif: False
+save_animation_gif: True
 
 model_name: linear_model  # filename of the model to be saved.
 seed: 42
