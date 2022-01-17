@@ -27,8 +27,6 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
     images = []
     # env.store_transition()
 
-    if save_animation_gif:
-        img = model.env.render(mode='rgb_array')    # print(env.l2_distances, 'obs:', obs)
     steps_list = []
     dists_1 = []
     dists_2 = []
@@ -43,6 +41,8 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
 
     import time
     obs = env.reset(neighborhood_size)
+    if save_animation_gif:
+        img = env.render(mode='rgb_array')    # print(env.l2_distances, 'obs:', obs)
     # TODO: break quando errore minimo raggiunto
     start = time.time()
     with tqdm(total=cfg.max_steps) as pbar:
@@ -91,7 +91,7 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
             if save_animation_gif:
                 if (i % 150) == 0:
                     images.append(img)
-                    img = model.env.render(mode='rgb_array')
+                    img = env.render(mode='rgb_array')
             test_score += rewards
 
             if info['sweep_completed']:

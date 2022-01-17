@@ -239,10 +239,12 @@ class CanvasModelingTest:
         ax = fig.add_subplot(111, projection='3d')
         # ax.axis('off')
 
-        ax.scatter(self.t_x[self.old_neighborhood_mask][0], self.t_y[self.old_neighborhood_mask][0], self.t_z[self.old_neighborhood_mask][0], color='green', s=self.marker_size)
-        ax.scatter(self.t_x[self.old_neighborhood_mask][1:], self.t_y[self.old_neighborhood_mask][1:], self.t_z[self.old_neighborhood_mask][1:], color='blue', s=self.marker_size)
-        ax.scatter(self.c_x[self.old_neighborhood_mask][0], self.c_y[self.old_neighborhood_mask][0], self.c_z[self.old_neighborhood_mask][0], color='orange')
-        ax.scatter(self.c_x[self.old_neighborhood_mask][1:], self.c_y[self.old_neighborhood_mask][1:], self.c_z[self.old_neighborhood_mask][1:], color='red')
+        ax.scatter(self.shape_t_x, self.shape_t_y, self.shape_t_z, color='blue', s=self.marker_size)
+        ax.scatter(self.shape_t_x[self.vertex_mask], self.shape_t_y[self.vertex_mask], self.shape_t_z[self.vertex_mask],
+                   color='green', s=self.marker_size)
+        ax.scatter(self.shape_c_x, self.shape_c_y, self.shape_c_z, color='orange')
+        ax.scatter(self.shape_c_x[self.vertex_mask], self.shape_c_y[self.vertex_mask], self.shape_c_z[self.vertex_mask],
+                   color='red')
 
         ax.set_xlim([-self.spread - 1, self.spread + 1])
         ax.set_ylim([-self.spread - 1, self.spread + 1])
