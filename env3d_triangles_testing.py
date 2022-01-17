@@ -84,7 +84,6 @@ class CanvasModelingTest:
             # for each step, save t_x,t_y,t_z,c_x,c_y,c_z, and the new triangle vertex positions (3)
             self.canvas_transition_matrix = np.zeros((cfg.max_steps+1, 3), dtype=object) # , 3))
             # for each step, save, for target_vertex_mask and canvas_vertex_mask, the three vertex points
-            self.vertex_masks_transitions = np.zeros((cfg.max_steps+1, 2, 3))
             self.actions_transitions = np.zeros((cfg.max_steps+1, 3))
             self.states_transitions = np.zeros(cfg.max_steps+1, dtype=object) # self.num_moving_points*3))
             self.actions_to_save = np.zeros(3)
@@ -145,6 +144,7 @@ class CanvasModelingTest:
             self.config_66 = np.zeros((3, len(self.c_x)))
             self.target_vertices = np.vstack((self.shape_t_x, self.shape_t_y, self.shape_t_z))
             self.neighborhood_mask_transitions = np.zeros(self.max_steps+1, dtype=object)
+            self.vertex_masks_transitions = np.zeros(self.max_steps+1, dtype=object)
             self.canvas_vertices_transitions = np.zeros((self.max_steps + 1, self.neighborhood_size, len(self.c_x)))
         return self.state
 
@@ -301,6 +301,7 @@ class CanvasModelingTest:
                        'canvas_vertices_transitions': self.canvas_vertices_transitions,
             'states_transitions': self.states_transitions, 'actions_transitions': self.actions_transitions,
             'canvas_transition_matrix': self.canvas_transition_matrix, 'vertex_masks': self.vertex_masks_transitions,
-                       '33_config': self.config_33, '66_config': self.config_66, 'final_configuration': final_configuration}
+           'neighborhood_mask_transitions': self.neighborhood_mask_transitions, '33_config': self.config_33,
+           '66_config': self.config_66, 'final_configuration': final_configuration}
         pickle.dump(transitions, file)
         file.close()
