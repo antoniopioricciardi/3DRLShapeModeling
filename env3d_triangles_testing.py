@@ -32,7 +32,8 @@ class CanvasModelingTest:
     def __init__(self, cfg):
         self.num_points = cfg.num_points
         self.neighborhood_size = cfg.neighborhood_size
-        self.steps_per_vertex = cfg.steps_per_vertex
+        self.steps_per_vertex = cfg.\
+            _vertex
         self.spread = cfg.spread
         self.neighbors_movement_scale = cfg.neighbors_movement_scale
         self.max_steps = cfg.max_steps
@@ -208,7 +209,7 @@ class CanvasModelingTest:
             self.old_neighborhood_mask = self.neighborhood_mask.copy()
             self.neighborhood_mask = np.roll(self.neighborhood_mask, -1)
             self.n_rolls += 1
-            if self.n_rolls == len(self.neighborhood_mask):
+            if self.n_rolls == len(self.neighborhood_mask)*5:
                 sweep_completed = True
             """ part below unused for now """
             self.vertex_idx += 1
