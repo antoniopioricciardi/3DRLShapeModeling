@@ -70,8 +70,8 @@ o3d.visualization.draw([mesh2])
 o3d.visualization.draw([mesh1, mesh2])
 v2 = np.array(mesh2.vertices)
 
-s_x, s_y, s_z = get_coordinates(V, 2.5)
-c_x, c_y, c_z = get_coordinates(v2, 2.5)
+s_x, s_y, s_z = get_coordinates(V, 5)
+c_x, c_y, c_z = get_coordinates(v2, 5)
 # plot_point_cloud([(final_configuration[0], final_configuration[1], final_configuration[2]), (c_x, c_y, c_z)])
 print(canvas_vertices_transitions[0][0] == c_x, canvas_vertices_transitions[0][1] == c_y, canvas_vertices_transitions[0][2] == c_z)
 

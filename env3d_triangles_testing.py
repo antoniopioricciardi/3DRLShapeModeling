@@ -263,9 +263,9 @@ class CanvasModelingTest:
     def store_transition(self):
         self.neighborhood_mask_transitions[self.step_n] = self.neighborhood_mask
         # contains the the status of the whole set of vertices at that timestep
-        self.canvas_vertices_transitions[self.step_n][0] = self.c_x
-        self.canvas_vertices_transitions[self.step_n][1] = self.c_y
-        self.canvas_vertices_transitions[self.step_n][2] = self.c_z
+        self.canvas_vertices_transitions[self.step_n][0] = self.shape_c_x
+        self.canvas_vertices_transitions[self.step_n][1] = self.shape_c_y
+        self.canvas_vertices_transitions[self.step_n][2] = self.shape_c_z
         # contains the set of vertices modified during current step
         self.canvas_transition_matrix[self.step_n] = (self.c_x, self.c_y, self.c_z)
         # np.concatenate((
