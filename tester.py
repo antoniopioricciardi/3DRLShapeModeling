@@ -56,7 +56,7 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
             # dists_2.append(env.l2_distances[1])
             action, _states = model.predict(obs, deterministic=True)
             obs, rewards, done, info = env.step(action)
-            # env.store_transition()
+            env.store_transition()
             # vid.capture_frame()
             if cfg.is_testing and env.total_step_n % 500 == 0:
                 area_diff = abs(env.convex_hull_area_source - env.convex_hull_area_canvas)
@@ -98,14 +98,13 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
                 obs = env.advance_neighborhood(neighborhood_size)
 
     end = time.time() - start
-    exit(5)
     # print(end)
     if not os.path.exists(res_path):
         os.mkdir(res_path)
     res_path = os.path.join(res_path, 'transitions')
     if not os.path.exists(res_path):
         os.mkdir(res_path)
-    # env.save_transitions(os.path.join(res_path, model_name))
+    env.save_transitions(os.path.join(res_path, model_name))
 
     # shutdown the logger
     if wandb_logger is not None:
@@ -115,4 +114,6 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
         imageio.mimsave('animation.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=29)
 
     # Close Environment
-    env.close()
+    # env.close()
+
+    return area_diff, abs_dist, centroid_x_diff, centroid_y_diff

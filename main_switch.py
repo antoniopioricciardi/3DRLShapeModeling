@@ -94,23 +94,23 @@ def run(cfg):
     "linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5"
     "linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5"
     # Initialise a W&B run
-    wandb_logger = wandb.init(
-        name=model_name,
-        project="TRAIN-3Dmodeling_linear",
-        config=cfg,
-        sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
-        monitor_gym=True,  # auto-upload the videos of agents playing the game
-        save_code=True,  # optional
-    )
 
-    wandb_callback = WandbCallback(
-        gradient_save_freq=5,
-        model_save_path=f"models/{wandb_logger.id}",
-        verbose=2,
-    )
 
     if cfg.is_training == True:
+        wandb_logger = wandb.init(
+            name=model_name,
+            project="TRAIN-3Dmodeling_linear",
+            config=cfg,
+            sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+            monitor_gym=True,  # auto-upload the videos of agents playing the game
+            save_code=True,  # optional
+        )
 
+        wandb_callback = WandbCallback(
+            gradient_save_freq=5,
+            model_save_path=f"models/{wandb_logger.id}",
+            verbose=2,
+        )
         # Wrapper for multi-environment
         def make_env(cfg):
             env = CanvasModeling(cfg)
@@ -149,6 +149,20 @@ def run(cfg):
         model.save(os.path.join(MODELS_PATH, model_name))
         env.close()
     else:
+        wandb_logger = wandb.init(
+            name=model_name,
+            project="TEST-3Dmodeling_linear",
+            config=cfg,
+            sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+            monitor_gym=True,  # auto-upload the videos of agents playing the game
+            save_code=True,  # optional
+        )
+
+        wandb_callback = WandbCallback(
+            gradient_save_freq=5,
+            model_save_path=f"models/{wandb_logger.id}",
+            verbose=2,
+        )
         target_shape_path = cfg.inits_s.from_shape.shape_path
         target_shape_name = target_shape_path[target_shape_path.rfind("/") + 1:]
         canvas_shape_path = cfg.inits_c.from_shape.shape_path
