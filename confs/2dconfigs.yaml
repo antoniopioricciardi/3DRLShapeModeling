@@ -26,8 +26,8 @@ neighbors_movement_scale: 1
 sigma: 1
 spread : 5
 steps_per_round: 15
-total_timesteps : 50000  # total training steps
-max_steps : 50  # n steps before resetting the env
+total_timesteps : 80000  # total training steps
+max_steps : 100  # n steps before resetting the env
 learning_rate : 0.001
 update_step: 2048
 log_video_steps : 2048

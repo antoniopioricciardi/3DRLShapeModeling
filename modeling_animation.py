@@ -38,7 +38,7 @@ shape_path2 = os.path.join('shapes', shape_name2)
 # open a file, where you stored the pickled data
 transition_path = os.path.join(RESULTS_PATH, shape_name1 + '--' + shape_name2)
 transition_path = os.path.join(transition_path, 'transitions')
-model_name = 'gaussian_model-seed_42-spread_5-lr_0.0001-sigma_0.5-neighborsmovementscale_1'
+model_name = 'linear_model-numpoints_3-seed_42-spread_5-lr_0.001-sigma_0.1-neighborsmovementscale_0.5'
 file = open(os.path.join(transition_path, model_name), 'rb')
 
 # read information from file
