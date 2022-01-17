@@ -272,7 +272,7 @@ class CanvasModelingTest:
         #                                                       self.c_y[self.canvas_vertex_mask],
         #                                                       self.c_z[self.canvas_vertex_mask])).reshape(3,3)
 
-        self.vertex_masks_transitions[self.step_n][0] = self.vertex_mask
+        self.vertex_masks_transitions[self.step_n] = self.vertex_mask
         # self.vertex_masks_transitions[self.step_n] = np.concatenate((self.target_vertex_mask,
         #                                                              self.canvas_vertex_mask)).reshape((2,3))
         self.actions_transitions[self.step_n] = self.actions_to_save
