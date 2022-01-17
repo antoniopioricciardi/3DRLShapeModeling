@@ -111,7 +111,7 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
         wandb_logger.finish()
 
     if save_animation_gif:
-        imageio.mimsave('animation.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=29)
+        imageio.mimsave(model_name + '-animation.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=29)
 
     # Close Environment
     # env.close()

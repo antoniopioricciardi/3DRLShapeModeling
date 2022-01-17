@@ -168,7 +168,6 @@ class CanvasModelingTest:
         # canvas_vertex_mask = triangle_neighborhood(self.canvas_tri, self.triangle_idx, self.vertex_idx)
         self.vertex_mask = vertex_mask_from_triangle_adjacency(self.canvas_tri, self.triangle_idx, self.adj_tri, self.n_hops,
                                                                 self.neighborhood_size)
-
         self.neighborhood_mask = np.arange(self.num_points)
         self.old_neighborhood_mask = self.neighborhood_mask.copy()
 
