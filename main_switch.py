@@ -54,7 +54,7 @@ def run(cfg):
     save_animation_gif = cfg.save_animation_gif
     num_triangles = cfg.num_triangles
     steps_per_vertex = cfg.steps_per_vertex
-    num_points = cfg.num_points
+    num_points = cfg.neighborhood_size #  cfg.num_points
     spread = cfg.spread
     max_steps = cfg.max_steps
     args_env = cfg

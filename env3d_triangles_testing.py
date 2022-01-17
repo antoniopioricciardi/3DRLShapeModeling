@@ -109,7 +109,12 @@ class CanvasModelingTest:
         # self.t_x, self.t_y, self.t_z = self.f_inits_t()
         # self.c_x, self.c_y, self.c_z = self.f_inits_c()
         self.neighborhood_size = neighborhood_size
-
+        if neighborhood_size == 3:
+            self.n_hops = 0
+        if neighborhood_size == 6:
+            self.n_hops = 1
+        if neighborhood_size == 12:
+            self.n_hops = 2
         # canvas_vertex_mask = triangle_neighborhood(self.canvas_tri, self.triangle_idx, self.vertex_idx)
         self.vertex_mask = vertex_mask_from_triangle_adjacency(self.canvas_tri, self.triangle_idx, self.adj_tri, self.n_hops,
                                                                 self.neighborhood_size)
@@ -154,7 +159,12 @@ class CanvasModelingTest:
         # self.t_x, self.t_y, self.t_z = self.f_inits_t()
         # self.c_x, self.c_y, self.c_z = self.f_inits_c()
         self.neighborhood_size = neighborhood_size
-
+        if neighborhood_size == 3:
+            self.n_hops = 0
+        if neighborhood_size == 6:
+            self.n_hops = 1
+        if neighborhood_size == 12:
+            self.n_hops = 2
         # canvas_vertex_mask = triangle_neighborhood(self.canvas_tri, self.triangle_idx, self.vertex_idx)
         self.vertex_mask = vertex_mask_from_triangle_adjacency(self.canvas_tri, self.triangle_idx, self.adj_tri, self.n_hops,
                                                                 self.neighborhood_size)
