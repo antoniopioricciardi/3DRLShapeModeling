@@ -77,14 +77,26 @@ class CanvasModelingTest:
             dtype=np.float32,
         )
 
-        target_mesh, target_vert, target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
+        ''' if we want to save transitions, initialize transition matrices. '''
+        self.save_trans = cfg.save_transitions
+        self.is_testing = cfg.is_testing
+        if self.save_trans:
+            # for each step, save t_x,t_y,t_z,c_x,c_y,c_z, and the new triangle vertex positions (3)
+            self.canvas_transition_matrix = np.zeros((cfg.max_steps+1, 3), dtype=object) # , 3))
+            # for each step, save, for target_vertex_mask and canvas_vertex_mask, the three vertex points
+            self.vertex_masks_transitions = np.zeros((cfg.max_steps+1, 2, 3))
+            self.actions_transitions = np.zeros((cfg.max_steps+1, 3))
+            self.states_transitions = np.zeros(cfg.max_steps+1, dtype=object) # self.num_moving_points*3))
+            self.actions_to_save = np.zeros(3)
+
+        self.target_mesh, self.target_vert, self.target_tri = load_shape('shapes/tr_reg_000_rem.ply', simplify=False,
                                                           normalize=True)
-        self.shape_t_x, self.shape_t_y, self.shape_t_z = get_coordinates(target_vert, self.spread)
+        self.shape_t_x, self.shape_t_y, self.shape_t_z = get_coordinates(self.target_vert, self.spread)
         # canv_mesh, canvas_vert, self.canvas_tri = sphere_from_mesh(target_vert, self.triangles)
         self.canvas_mesh, self.canvas_vert, self.canvas_tri = load_shape('shapes/smpl_base_neutro_rem.ply', simplify=False,
                                                           normalize=True)
         self.shape_c_x, self.shape_c_y, self.shape_c_z = get_coordinates(self.canvas_vert, self.spread)
-        self.adj_tri, self.adj_edge = compute_triangle_triangle_adjacency_matrix_igl(target_tri)
+        self.adj_tri, self.adj_edge = compute_triangle_triangle_adjacency_matrix_igl(self.canvas_tri)
 
         self.triangle_idx = 0
 
@@ -117,6 +129,48 @@ class CanvasModelingTest:
         if self.is_testing:
             self.abs_dist, self.source_centroid, self.canvas_centroid, self.convex_hull_area_source, self.convex_hull_area_canvas = compute_metrics3d(
                 self.shape_t_x, self.shape_t_y, self.shape_t_z, self.shape_c_x, self.shape_c_y, self.shape_c_z)
+        self.triangle_idx += 1
+        if self.triangle_idx == len(self.canvas_tri):
+            self.triangle_idx = 0
+
+        ''' if we want to store transitions '''
+        if self.save_trans:
+            # points configuration at 33% of the computation
+            self.config_33 = np.zeros((3, len(self.c_x)))
+            self.config_66 = np.zeros((3, len(self.c_x)))
+            self.target_vertices = np.vstack((self.shape_t_x, self.shape_t_y, self.shape_t_z))
+            self.neighborhood_mask_transitions = np.zeros(self.max_steps+1, dtype=object)
+            self.canvas_vertices_transitions = np.zeros((self.max_steps + 1, self.neighborhood_size, len(self.c_x)))
+        return self.state
+
+    def advance_neighborhood(self, neighborhood_size):
+        """
+        Similar to reset, but avoid resetting some values breaking the simulation.
+        Might find a prettier way of doing this without too much code reusing
+        """
+        self.n_rolls = 0
+        self.vertex_idx = 0  # for choosing the vertex to move
+        # self.triangle_idx = 0
+        # self.t_x, self.t_y, self.t_z = self.f_inits_t()
+        # self.c_x, self.c_y, self.c_z = self.f_inits_c()
+        self.neighborhood_size = neighborhood_size
+
+        # canvas_vertex_mask = triangle_neighborhood(self.canvas_tri, self.triangle_idx, self.vertex_idx)
+        self.vertex_mask = vertex_mask_from_triangle_adjacency(self.canvas_tri, self.triangle_idx, self.adj_tri, self.n_hops,
+                                                                self.neighborhood_size)
+
+        self.neighborhood_mask = np.arange(self.num_points)
+        self.old_neighborhood_mask = self.neighborhood_mask.copy()
+
+        self.t_x = self.shape_t_x[self.vertex_mask]
+        self.t_y = self.shape_t_y[self.vertex_mask]
+        self.t_z = self.shape_t_z[self.vertex_mask]
+        self.c_x = self.shape_c_x[self.vertex_mask]
+        self.c_y = self.shape_c_y[self.vertex_mask]
+        self.c_z = self.shape_c_z[self.vertex_mask]
+
+        self.state = np.float32(np.concatenate((self.t_x-self.c_x, self.t_y-self.c_y, self.t_z-self.c_z)))
+
         self.triangle_idx += 1
         if self.triangle_idx == len(self.canvas_tri):
             self.triangle_idx = 0
@@ -196,31 +250,33 @@ class CanvasModelingTest:
         return image
 
     def store_transition(self):
+        self.neighborhood_mask_transitions[self.step_n] = self.neighborhood_mask
         # contains the the status of the whole set of vertices at that timestep
         self.canvas_vertices_transitions[self.step_n][0] = self.c_x
         self.canvas_vertices_transitions[self.step_n][1] = self.c_y
         self.canvas_vertices_transitions[self.step_n][2] = self.c_z
         # contains the set of vertices modified during current step
-        self.canvas_transition_matrix[self.step_n] = np.concatenate((
-                                                              self.c_x[self.canvas_vertex_mask],
-                                                              self.c_y[self.canvas_vertex_mask],
-                                                              self.c_z[self.canvas_vertex_mask])).reshape(3,3)
+        self.canvas_transition_matrix[self.step_n] = (self.c_x, self.c_y, self.c_z)
+        # np.concatenate((
+        #                                                       self.c_x[self.canvas_vertex_mask],
+        #                                                       self.c_y[self.canvas_vertex_mask],
+        #                                                       self.c_z[self.canvas_vertex_mask])).reshape(3,3)
 
-        self.vertex_masks_transitions[self.step_n] = np.concatenate((self.target_vertex_mask,
-                                                                     self.canvas_vertex_mask)).reshape((2,3))
+        self.vertex_masks_transitions[self.step_n][0] = self.vertex_mask
+        # self.vertex_masks_transitions[self.step_n] = np.concatenate((self.target_vertex_mask,
+        #                                                              self.canvas_vertex_mask)).reshape((2,3))
         self.actions_transitions[self.step_n] = self.actions_to_save
         self.states_transitions[self.step_n] = self.state
         # save point configuration as 33 and 66 % of the execution
-        if self.total_step_n == (self.total_timesteps//0.33):
+        if self.total_step_n == (self.max_steps//0.33):
             self.config_33[0] = self.c_x
             self.config_33[1] = self.c_y
             self.config_33[2] = self.c_z
 
-        if self.total_step_n == (self.total_timesteps//0.66):
+        if self.total_step_n == (self.max_steps//0.66):
             self.config_66[0] = self.c_x
             self.config_66[1] = self.c_y
             self.config_66[2] = self.c_z
-
 
     def save_transitions(self, filename):
         # open a file, where you ant to store the data
@@ -231,7 +287,7 @@ class CanvasModelingTest:
         final_configuration[1] = self.c_y
         final_configuration[2] = self.c_z
 
-        transitions = {'target_vertices': self.target_vertices, 'target_triangles': self.triangles, 'canvas_triangles': self.canvas_tri,
+        transitions = {'target_vertices': self.target_vertices, 'target_triangles': self.target_tri, 'canvas_triangles': self.canvas_tri,
                        'canvas_vertices_transitions': self.canvas_vertices_transitions,
             'states_transitions': self.states_transitions, 'actions_transitions': self.actions_transitions,
             'canvas_transition_matrix': self.canvas_transition_matrix, 'vertex_masks': self.vertex_masks_transitions,

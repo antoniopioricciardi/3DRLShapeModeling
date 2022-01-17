@@ -95,7 +95,7 @@ def test(cfg, model, wandb_logger, model_name, save_animation_gif, res_path):
             test_score += rewards
 
             if info['sweep_completed']:
-                obs = env.reset(neighborhood_size)
+                obs = env.advance_neighborhood(neighborhood_size)
 
     end = time.time() - start
     exit(5)
