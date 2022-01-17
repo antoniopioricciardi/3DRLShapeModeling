@@ -145,7 +145,7 @@ class CanvasModelingTest:
             self.target_vertices = np.vstack((self.shape_t_x, self.shape_t_y, self.shape_t_z))
             self.neighborhood_mask_transitions = np.zeros(self.max_steps+1, dtype=object)
             self.vertex_masks_transitions = np.zeros(self.max_steps+1, dtype=object)
-            self.canvas_vertices_transitions = np.zeros((self.max_steps + 1, self.neighborhood_size, len(self.c_x)))
+            self.canvas_vertices_transitions = np.zeros((self.max_steps + 1, 3), dtype=object)# self.neighborhood_size))
         return self.state
 
     def advance_neighborhood(self, neighborhood_size):
