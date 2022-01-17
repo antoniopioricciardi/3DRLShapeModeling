@@ -21,6 +21,7 @@ steps_per_vertex: 15
 neighbors_movement_scale: 0.5
 sigma: 0.1
 spread : 5
+neighborhood_size: 3
 
 is_training: True
 is_testing: False
